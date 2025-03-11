@@ -5,3 +5,4 @@
 - 18/05/2025: D3 report (+code)
 - 7-10/06/2025: D4 report + video + code
 - 26/04/2025 (16:00): award ceremony (last year)
+bla
