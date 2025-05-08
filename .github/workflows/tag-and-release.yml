@@ -10,22 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: read
 
     steps:
-      - name: Fail if push not from PR or trusted user
-        run: |
-          echo "Pusher: ${{ github.actor }}"
-          TRUSTED_USERS=""
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.actor }}" != *"${TRUSTED_USERS}"* ]]; then
-            echo "❌ Push diretto su main non permesso per utenti non autorizzati."
-            exit 1
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Fail if push not from PR or trusted user
+        run: |
+          echo "Pusher: ${{ github.actor }}"
+
+          TRUSTED_USERS=()  # Aggiungere gli utenti autorizzati
+
+          IS_TRUSTED=false
+          for user in "${TRUSTED_USERS[@]}"; do
+            if [[ "${{ github.actor }}" == "$user" ]]; then
+              IS_TRUSTED=true
+              break
+            fi
+          done
+
+          if [[ "$IS_TRUSTED" == "false" ]]; then
+            echo "❌ Push diretto su main da utente non autorizzato (${GITHUB_ACTOR}). Blocchiamo la release."
+            exit 1
+          fi
 
       - name: Get latest tag and calculate new tag
         id: get_tag
@@ -82,3 +91,19 @@ jobs:
           tag_name: ${{ env.NEW_TAG }}
           name: Release ${{ env.NEW_TAG }}
           body_path: changes.txt
+
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Nuova release ${{ env.NEW_TAG }} disponibile
+          to: destinatario@example.com
+          from: GitHub Actions <noreply@example.com>
+          body: |
+            È stata appena pubblicata la release ${{ env.NEW_TAG }}.
+            Di seguito il changelog:
+            
+            ${{ steps.changelog.outputs.body }}
