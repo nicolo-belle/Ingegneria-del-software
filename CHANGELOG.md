@@ -1,3 +1,5 @@
+## v1.1 - 2025-05-08
+- prova workflow (Nicolò Bellè)
 ## v1.0 - 2025-05-08
 - Create tag-and-release.yml (Nicolò Bellè)
 - Merge pull request #4 from nicolo-belle/Nicolò (Nicolò Bellè)
